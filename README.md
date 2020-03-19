@@ -46,4 +46,4 @@ Gift,2020-03-19,14:49:25,378088413,"一个B站用户","摩天大楼",1,360000,go
 ![Screenshot](https://github.com/mapkts/bilibili-helper/raw/master/demo/screenshot.png)
 
 
-一个简单的小工具，觉得还不错就给个star吧 (  •̆ ᵕ •̆ )◞♡
+**一个简单的小工具，觉得还不错就给个star吧 (  •̆ ᵕ •̆ )◞♡**
