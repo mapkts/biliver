@@ -21,7 +21,7 @@ fn main() {
             .long("room")
             .takes_value(true)
             .value_name("ROOM_ID")
-            .help("Listens to a specific room")
+            .help("Listens to the provided room")
       )
       .arg(
         Arg::with_name("no-print")
