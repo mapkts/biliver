@@ -13,12 +13,12 @@ cd bilibili-helper && cargo build --release && cp ./target/release/bilive ./ && 
 
 | 配置项 | 默认值 | 说明 |
 | ----- | ----- | ----- |
-| user_id | | 用户id，此项修改为自己的B站直播uid |
-| room_id | | 房间号，可从房间页面url获取 |
+| user_id | 无 | 用户id，此项修改为自己的B站直播uid |
+| room_id | 无 | 房间号，可从房间页面url获取 |
 | no_print | false | 默认打印格式化的弹幕到控制台 |
 | log_interval | 3 | 每两次写入人气值的时间间隔，单位为分钟 |
-| log_threshold | 10 | 人气阈值，低于阈值的人气不会写入日志 |
-| ignores | | 忽略特定用户的弹幕，弹幕不会打印到控制台和写入日志文件 |
+| log_threshold | 10 | 人气阈值，低于阈值的人气不会写入日志文件 |
+| ignores | 无 | 忽略特定用户的弹幕，忽略的弹幕不会打印到控制台和写入日志文件，一般用于屏蔽机器人弹幕 |
 | no_silver | true | 默认不写入银瓜子礼物记录（辣条、免费道具等) |
 
 * 以后每次使用只需执行命令：`./bilive`
