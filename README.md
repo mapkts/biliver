@@ -9,7 +9,8 @@ cd bilibili-helper && cargo build --release && cp ./target/release/bilive ./ && 
 ```
 
 ### 使用方法
-* 首次使用需修改项目根目录下的配置文件conf.toml
+* 首次使用需修改项目根目录下的配置文件conf.toml, 可配置项说明如下：
+
 | 配置项 | 默认值 | 说明 |
 | ----- | ----- | ----- |
 | user_id | | 用户id，此项修改为自己的B站直播uid |
@@ -26,7 +27,7 @@ cd bilibili-helper && cargo build --release && cp ./target/release/bilive ./ && 
 ### 数据写入
 人气、弹幕、礼物数据默认按时间顺序写入到当前工作目录下的`[room_id].log.csv`文件中，默认编码为GB18030，经测试在Excel和windows记事本下可正常显示（无乱码）
 
-各项数据说明：
+各项写入数据对照说明如下：
 ```
 Popularity,2020-03-19,14:08:04,8486
 人气，日期，时间，人气值
@@ -41,6 +42,7 @@ Gift,2020-03-19,14:49:25,378088413,"一个B站用户","摩天大楼",1,360000,go
 ```
 
 ### 弹幕打印
+(打印顺序：弹幕时间 发送用户 弹幕内容)
 ![Screenshot](https://github.com/mapkts/bilibili-helper/raw/master/demo/screenshot.png)
 
 
