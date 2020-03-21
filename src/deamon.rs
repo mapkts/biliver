@@ -1,6 +1,6 @@
 use {
     std::{
-        io::{Cursor, Read, Write},
+        io::{self, Cursor, Read, Write},
         net::{TcpStream, ToSocketAddrs},
         sync::mpsc::{self, TryRecvError},
         str,
@@ -13,7 +13,7 @@ use {
     serde_json::{self, Value},
 };
 
-pub fn main_loop(config: Config, log_file: &mut std::fs::File) {
+pub fn main_loop<B: Write>(config: Config, buf: &mut B) -> io::Result<()> {
     loop {
         let socket = match format!("{}:{}", config.host, config.port).to_socket_addrs() {
             Ok(addrs) => {
@@ -89,7 +89,7 @@ pub fn main_loop(config: Config, log_file: &mut std::fs::File) {
         });
 
 
-        if let Err(e) = receive(&mut stream, log_file, &config) {
+        if let Err(e) = receive(&mut stream, buf, &config) {
             eprintln!("network failure: {}", e);
         }
 
@@ -114,7 +114,7 @@ fn send<T: Write>(stream: &mut T, package: Package) -> std::io::Result<()> {
     Ok(())
 }
 
-fn receive<T: Read>(socket: &mut T, log_file: &mut std::fs::File, config: &Config) -> Result<(), &'static str> {
+fn receive<T: Read, B: Write>(socket: &mut T, buf: &mut B, config: &Config) -> Result<(), &'static str> {
     let mut counter = LoopCounter::new(config.log_interval as f64);
 
     loop {
@@ -155,14 +155,14 @@ fn receive<T: Read>(socket: &mut T, log_file: &mut std::fs::File, config: &Confi
             3 => {
                 if counter.next().unwrap() == config.log_interval as f64 {
                     let popularity = Cursor::new(buffer.as_slice()).read_u32::<BigEndian>().unwrap();
-                    writer::write_popularity(popularity, log_file, config.log_threshold);
+                    writer::write_popularity(popularity, buf, config.log_threshold);
                 }
 
             },
             8 => println!("成功进入直播间, 开始监听..."),
             5 => {
                 let data = String::from_utf8(buffer).unwrap_or("error decoding utf8".to_string());
-                if let Err(e) = parse_barrage(&data, log_file, &config) {
+                if let Err(e) = parse_barrage(&data, buf, &config) {
                     eprintln!("error parsing danmu: {}", e);
                 }
             }
@@ -173,7 +173,7 @@ fn receive<T: Read>(socket: &mut T, log_file: &mut std::fs::File, config: &Confi
     }
 }
 
-fn parse_barrage(data: &str, log_file: &mut std::fs::File, config: &Config) -> Result<(), &'static str> {
+fn parse_barrage<B: Write>(data: &str, buf: &mut B, config: &Config) -> Result<(), &'static str> {
     let json: Value = serde_json::from_str::<Value>(data).or(Err("error parsing body"))?;
     let cmd = json.get("cmd").ok_or("unknown command")?;
     match cmd.as_str() {
@@ -186,7 +186,7 @@ fn parse_barrage(data: &str, log_file: &mut std::fs::File, config: &Config) -> R
                 let coin_type = value.get("coin_type").unwrap().as_str().unwrap();
                 let total_coin = value.get("total_coin").unwrap().as_u64().unwrap();
 
-                writer::write_gift(uid, uname, gift_name, num, coin_type, total_coin, log_file, config.no_silver);
+                writer::write_gift(uid, uname, gift_name, num, coin_type, total_coin, buf, config.no_silver);
         },
         Some("DANMU_MSG") => {
             let info = json.get("info").ok_or("error parsing info")?;
@@ -202,7 +202,7 @@ fn parse_barrage(data: &str, log_file: &mut std::fs::File, config: &Config) -> R
                 .as_array()
                 .map_or("unknown", |user| user[1].as_str().unwrap_or("unknown"));
 
-            writer::write_barrage(uid, uname, msg, log_file, &config.ignores, config.no_print);
+            writer::write_barrage(uid, uname, msg, buf, &config.ignores, config.no_print);
         },
         _ => (),
     }

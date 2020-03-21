@@ -3,7 +3,7 @@ use std::io::prelude::*;
 use std::collections::HashSet;
 use serde_derive::Deserialize;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct Config {
     pub host: String,
     pub port: u32,
