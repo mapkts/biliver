@@ -25,7 +25,7 @@ cd bilibili-helper && cargo build --release && cp ./target/release/bilive ./ && 
 （`./bilive --help`可查看可选命令行参数，**命令行传递的参数会覆盖配置文件的参数**）
 
 ### 数据写入
-人气、弹幕、礼物数据默认按时间顺序写入到当前工作目录下的`[room_id].log.csv`文件中，默认编码为GB18030，经测试在Excel和windows记事本下可正常显示（无乱码）
+人气、弹幕、礼物数据默认按时间顺序写入到当前工作目录下的`[room_id].log.csv`文件中，默认编码为utf-8，经测试在Excel和windows记事本下可正常显示（无乱码）
 
 各项写入数据对照说明如下：
 ```
