@@ -47,7 +47,7 @@ fn main() -> std::io::Result<()> {
         .open(format!("{}-log.csv", config.room_id))
         .unwrap();
 
-    let mut buffer = BufWriter::with_capacity(256, file);
+    let mut buffer = BufWriter::with_capacity(1024, file);
 
     loop {
         if let Err(e) = deamon::main_loop(config.clone(), &mut buffer) {
