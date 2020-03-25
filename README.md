@@ -4,8 +4,8 @@ Bilibili直播弹幕、人气、礼物打印收集工具 (支持linux和windows�
 ### 安装方法
 (请确保你的机器安装了[Rust](https://www.rust-lang.org/tools/install))
 ```
-git clone https://github.com/mapkts/bilibili-helper.git
-cd bilibili-helper && cargo build --release && cp ./target/release/bilive ./ && rm -rf ./target
+git clone https://github.com/mapkts/biliver.git
+cd biliver && cargo build --release && cp ./target/release/biliver ./ && rm -rf ./target
 ```
 
 ### 使用方法
@@ -21,8 +21,8 @@ cd bilibili-helper && cargo build --release && cp ./target/release/bilive ./ && 
 | ignores | 无 | 忽略特定用户的弹幕，忽略的弹幕不会打印到控制台和写入日志文件，一般用于屏蔽机器人弹幕 |
 | no_silver | true | 默认不写入银瓜子礼物记录（辣条、免费道具等) |
 
-* 以后每次使用只需执行命令：`./bilive`
-（`./bilive --help`可查看可选命令行参数，**命令行传递的参数会覆盖配置文件的参数**）
+* 以后每次使用只需执行命令：`./biliver`
+（`./biliver --help`可查看可选命令行参数，**命令行传递的参数会覆盖配置文件的参数**）
 
 ### 数据写入
 人气、弹幕、礼物数据默认按时间顺序写入到当前工作目录下的`[room_id]-log.csv`文件中，默认编码为utf-8，经测试在Excel和windows记事本下可正常显示（无乱码）
