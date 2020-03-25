@@ -1,4 +1,4 @@
-# bilive-helper
+# biliver
 Bilibili直播弹幕、人气、礼物打印收集工具 (支持linux和windows双平台)
 
 ### 安装方法
