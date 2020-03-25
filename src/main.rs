@@ -53,7 +53,6 @@ fn main() -> std::io::Result<()> {
             buffer.flush()?;
             eprintln!("Deamon thread interrupted abnormally, try to restart: {}", e);
         }
-        buffer.flush()?;
         thread::sleep(Duration::from_secs(10));
     }
 

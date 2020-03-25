@@ -10,6 +10,10 @@ pub fn write_popularity<B: Write>(popularity: u32, buf: &mut B, threshold: u32) 
         if let Err(e) = buf.write(&line.as_bytes()) {
             eprintln!("ERROR: cannot write data to log file: {}", e);
         }
+
+        if let Err(e) = buf.flush() {
+            eprintln!("ERROR: cannot flush buffer contents: {}", e);
+        }
     }
 }
 
