@@ -3,7 +3,7 @@ name = "biliver"
 version = "0.1.0"
 authors = ["mapkts <vilscrolls@gmail.com>"]
 edition = "2018"
-description = "A Command Line Danmu Printer and Data Collector for Bilibi TV."
+description = "A Command Line Danmu Printer and Data Collector for Bilibili TV."
 
 [dependencies]
 serde = "1.0"
