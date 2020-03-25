@@ -7,9 +7,8 @@ use std::time::Duration;
 extern crate clap;
 use clap::{App, Arg};
 
-extern crate bilive;
-use bilive::deamon;
-use bilive::impls::Config;
+use biliver::deamon;
+use biliver::impls::Config;
 
 fn main() -> std::io::Result<()> {
     let mut config = Config::from_toml("./conf.toml");
