@@ -1,14 +1,16 @@
-use std::fs::OpenOptions;
-use std::io::{Write, BufWriter};
-use std::thread;
-use std::time::Duration;
+use std::{
+    fs::OpenOptions,
+    io::{BufWriter, Write},
+    thread,
+    time::Duration,
+};
 
 #[macro_use]
 extern crate clap;
 use clap::{App, Arg};
 
 use biliver::deamon;
-use biliver::impls::Config;
+use biliver::Config;
 
 fn main() -> std::io::Result<()> {
     let mut config = Config::from_toml("./conf.toml");
@@ -51,9 +53,9 @@ fn main() -> std::io::Result<()> {
     loop {
         if let Err(e) = deamon::main_loop(config.clone(), &mut buffer) {
             buffer.flush()?;
-            eprintln!("Deamon thread interrupted abnormally, try to restart: {}", e);
+            eprintln!("Deamon thread interrupted abnormally: {}", e);
+            eprintln!("Trying to restart deamon thread...");
         }
         thread::sleep(Duration::from_secs(10));
     }
-
 }

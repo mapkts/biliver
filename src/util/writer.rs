@@ -1,6 +1,6 @@
 use std::io::prelude::*;
 use std::collections::HashSet;
-use crate::utils::time::get_date_time;
+use crate::util::time::get_date_time;
 
 pub fn write_popularity<B: Write>(popularity: u32, buf: &mut B, threshold: u32) {
     if popularity > threshold {

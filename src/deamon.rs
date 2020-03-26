@@ -1,16 +1,16 @@
 use {
+    crate::{Config, LoopCounter, Package},
+    crate::util::writer,
+    byteorder::{BigEndian, ReadBytesExt, WriteBytesExt},
+    serde_json::{self, Value},
     std::{
         io::{self, Cursor, Read, Write},
         net::{TcpStream, ToSocketAddrs},
-        sync::mpsc::{self, TryRecvError},
         str,
+        sync::mpsc::{self, TryRecvError},
         thread,
         time::Duration,
     },
-    crate::impls::{Config, Package, LoopCounter},
-    crate::utils::writer,
-    byteorder::{BigEndian, ReadBytesExt, WriteBytesExt},
-    serde_json::{self, Value},
 };
 
 pub fn main_loop<B: Write>(config: Config, buf: &mut B) -> io::Result<()> {
@@ -29,13 +29,12 @@ pub fn main_loop<B: Write>(config: Config, buf: &mut B) -> io::Result<()> {
                     }
                 }
                 socket
-            },
+            }
             Err(e) => {
                 eprintln!("{}", e);
                 None
             }
         };
-
 
         let mut stream: TcpStream = match socket {
             None => {
@@ -57,7 +56,6 @@ pub fn main_loop<B: Write>(config: Config, buf: &mut B) -> io::Result<()> {
             println!("进入直播间失败: {}", e);
             continue;
         };
-
 
         // Spawn a thread for continuously sending heartbeat package in the background.
         let (tx, rx) = mpsc::channel();
@@ -88,11 +86,9 @@ pub fn main_loop<B: Write>(config: Config, buf: &mut B) -> io::Result<()> {
             }
         });
 
-
         if let Err(e) = receive(&mut stream, buf, &config) {
             eprintln!("network failure: {}", e);
         }
-
 
         if let Err(e) = tx.send(()) {
             eprintln!("error terminating child thread: {}", e);
@@ -104,7 +100,7 @@ fn send<T: Write>(stream: &mut T, package: Package) -> std::io::Result<()> {
     let mut buffer: Vec<u8> = Vec::with_capacity(package.length);
     buffer.write_u32::<BigEndian>(package.length as u32)?;
     buffer.write_u32::<BigEndian>(package.version as u32)?;
-    buffer.write_u32::<BigEndian>(package.action as u32)?;
+    buffer.write_u32::<BigEndian>(package.opcode as u32)?;
     buffer.write_u32::<BigEndian>(package.param as u32)?;
     match package.body {
         Some(body) => buffer.extend_from_slice(body.as_bytes()),
@@ -114,7 +110,11 @@ fn send<T: Write>(stream: &mut T, package: Package) -> std::io::Result<()> {
     Ok(())
 }
 
-fn receive<T: Read, B: Write>(socket: &mut T, buf: &mut B, config: &Config) -> Result<(), &'static str> {
+fn receive<T: Read, B: Write>(
+    socket: &mut T,
+    buf: &mut B,
+    config: &Config,
+) -> Result<(), &'static str> {
     let mut counter = LoopCounter::new(config.log_interval as f64);
 
     loop {
@@ -131,7 +131,7 @@ fn receive<T: Read, B: Write>(socket: &mut T, buf: &mut B, config: &Config) -> R
             version: cur
                 .read_u32::<BigEndian>()
                 .or(Err("error parsing version"))?,
-            action: cur
+            opcode: cur
                 .read_u32::<BigEndian>()
                 .or(Err("error parsing action"))?,
             param: cur.read_u32::<BigEndian>().or(Err("error parsing param"))?,
@@ -151,14 +151,15 @@ fn receive<T: Read, B: Write>(socket: &mut T, buf: &mut B, config: &Config) -> R
             );
         }
 
-        match package.action {
+        match package.opcode {
             3 => {
                 if counter.next().unwrap() == config.log_interval as f64 {
-                    let popularity = Cursor::new(buffer.as_slice()).read_u32::<BigEndian>().unwrap();
+                    let popularity = Cursor::new(buffer.as_slice())
+                        .read_u32::<BigEndian>()
+                        .unwrap();
                     writer::write_popularity(popularity, buf, config.log_threshold);
                 }
-
-            },
+            }
             8 => println!("成功进入直播间, 开始监听..."),
             5 => {
                 let data = String::from_utf8(buffer).unwrap_or("error decoding utf8".to_string());
@@ -178,16 +179,25 @@ fn parse_barrage<B: Write>(data: &str, buf: &mut B, config: &Config) -> Result<(
     let cmd = json.get("cmd").ok_or("unknown command")?;
     match cmd.as_str() {
         Some("SEND_GIFT") => {
-                let value = json.get("data").ok_or("error parsing data")?;
-                let uid = value.get("uid").unwrap().as_u64().unwrap();
-                let uname = value.get("uname").unwrap().as_str().unwrap();
-                let gift_name = value.get("giftName").unwrap().as_str().unwrap();
-                let num = value.get("num").unwrap().as_u64().unwrap();
-                let coin_type = value.get("coin_type").unwrap().as_str().unwrap();
-                let total_coin = value.get("total_coin").unwrap().as_u64().unwrap();
+            let value = json.get("data").ok_or("error parsing data")?;
+            let uid = value.get("uid").unwrap().as_u64().unwrap();
+            let uname = value.get("uname").unwrap().as_str().unwrap();
+            let gift_name = value.get("giftName").unwrap().as_str().unwrap();
+            let num = value.get("num").unwrap().as_u64().unwrap();
+            let coin_type = value.get("coin_type").unwrap().as_str().unwrap();
+            let total_coin = value.get("total_coin").unwrap().as_u64().unwrap();
 
-                writer::write_gift(uid, uname, gift_name, num, coin_type, total_coin, buf, config.no_silver);
-        },
+            writer::write_gift(
+                uid,
+                uname,
+                gift_name,
+                num,
+                coin_type,
+                total_coin,
+                buf,
+                config.no_silver,
+            );
+        }
         Some("DANMU_MSG") => {
             let info = json.get("info").ok_or("error parsing info")?;
             let array = info.as_array().ok_or("error parsing danmu data")?;
@@ -197,13 +207,14 @@ fn parse_barrage<B: Write>(data: &str, buf: &mut B, config: &Config) -> Result<(
             let msg = array[1].as_str().ok_or("error parsing danmu data")?;
             let uid = array[2]
                 .as_array()
-                .map(|user| user[0].as_u64().unwrap()).unwrap();
-            let uname =  array[2]
+                .map(|user| user[0].as_u64().unwrap())
+                .unwrap();
+            let uname = array[2]
                 .as_array()
                 .map_or("unknown", |user| user[1].as_str().unwrap_or("unknown"));
 
             writer::write_barrage(uid, uname, msg, buf, &config.ignores, config.no_print);
-        },
+        }
         _ => (),
     }
 
