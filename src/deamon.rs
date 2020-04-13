@@ -3,6 +3,7 @@ use {
     crate::util::writer,
     byteorder::{BigEndian, ReadBytesExt, WriteBytesExt},
     serde_json::{self, Value},
+    flate2::bufread::ZlibDecoder,
     std::{
         io::{self, Cursor, Read, Write},
         net::{TcpStream, ToSocketAddrs},
@@ -145,9 +146,10 @@ fn receive<T: Read, B: Write>(
                 .read_exact(buffer.as_mut_slice())
                 .or(Err("error reading socket"))?;
             package.body = Some(
-                str::from_utf8(buffer.as_slice())
-                    .unwrap_or("error decoding utf8")
-                    .to_owned(),
+                //str::from_utf8(buffer.as_slice())
+                //    .unwrap_or("error decoding utf8")
+                //    .to_owned(),
+                decode_bufreader(buffer.as_slice()).unwrap_or("error decoding package body".to_owned())
             );
         }
 
@@ -219,4 +221,11 @@ fn parse_barrage<B: Write>(data: &str, buf: &mut B, config: &Config) -> Result<(
     }
 
     Ok(())
+}
+
+fn decode_bufreader(bytes: &[u8]) -> io::Result<String> {
+    let mut z = ZlibDecoder::new(bytes);
+    let mut s = String::new();
+    z.read_to_string(&mut s)?;
+    Ok(s)
 }

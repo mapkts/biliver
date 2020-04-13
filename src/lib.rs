@@ -61,7 +61,7 @@ impl Package {
     pub fn new() -> Self {
         Package {
             length: 0x0000_0010,
-            version: 0x0010_0001,
+            version: 0x0010_0002,
             opcode: 0x0000_0000,
             param: 0x0000_0001,
             body: None,
