@@ -8,6 +8,8 @@ use std::{
 #[macro_use]
 extern crate clap;
 use clap::{App, Arg};
+use reqwest;
+use serde_json::Value;
 
 use biliver::deamon;
 use biliver::Config;
@@ -34,8 +36,24 @@ fn main() -> std::io::Result<()> {
         )
         .get_matches();
 
-    if matches.is_present("room") {
-        config.room_id = matches.value_of("room").unwrap().parse::<u32>().unwrap();
+    let room: u32 = if matches.is_present("room") {
+        matches.value_of("room").unwrap().parse::<u32>().unwrap()
+    } else {
+        config.room_id
+    };
+
+    match reqwest::blocking::get(&format!(
+        "https://api.live.bilibili.com/room/v1/Room/room_init?id={}",
+        room
+    ))
+    .ok()
+    {
+        Some(resp) => {
+            let body = resp.text().unwrap();
+            let json: Value = serde_json::from_str(&body).unwrap();
+            config.room_id = json["data"]["room_id"].as_u64().unwrap() as u32;
+        }
+        None => config.room_id = room,
     }
 
     if matches.is_present("no-print") {
