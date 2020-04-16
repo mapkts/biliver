@@ -63,7 +63,7 @@ fn main() -> std::io::Result<()> {
     let file = OpenOptions::new()
         .append(true)
         .create(true)
-        .open(format!("{}-log.csv", config.room_id))
+        .open(format!("{}-log.csv", room))
         .unwrap();
 
     let mut buffer = BufWriter::with_capacity(1024, file);
